@@ -1,0 +1,18 @@
+{
+  "loading_profile": "Inapakia profaili...",
+  "my_profile": "Profaili Yangu",
+  "full_name": "Jina Kamili",
+  "phone_number": "Namba ya Simu",
+  "update_profile": "Sasisha Profaili",
+  "settings": "Mipangilio",
+  "enable_notifications": "Washa Arifa",
+  "language": "Lugha",
+  "theme": "Mandhari",
+  "light": "Mwanga",
+  "dark": "Giza",
+  "save_settings": "Hifadhi Mipangilio",
+  "profile_updated": "Profaili imesasishwa kwa mafanikio!",
+  "profile_update_failed": "Imeshindikana kusasisha profaili",
+  "settings_updated": "Mipangilio imesasishwa kwa mafanikio!",
+  "settings_update_failed": "Imeshindikana kusasisha mipangilio"
+}
