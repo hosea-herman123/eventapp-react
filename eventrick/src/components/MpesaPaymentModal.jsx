@@ -10,31 +10,44 @@ function TicketPurchase({ eventId }) {
     return <p className="text-red-600">Missing event ID.</p>;
   }
 
+  const API_BASE_URL = "  https://7d56-197-232-120-220.ngrok-free.app";
+
+  console.log("API URL:", API_BASE_URL);
+
   const handlePurchase = async () => {
     setLoading(true);
     setMessage("");
 
-    // Step 1: Clean and validate phone number
-    let cleanPhone = phone.replace(/^=|\s+/g, ""); // remove '=' and spaces
+    let cleanPhone = phone.trim();
+
     if (cleanPhone.startsWith("0")) {
-      cleanPhone = "254" + cleanPhone.substring(1); // convert 07... → 2547...
+      cleanPhone = "254" + cleanPhone.substring(1);
     }
-    if (!cleanPhone.startsWith("254")) {
-      setMessage("Invalid phone number format. Use 2547XXXXXXXX.");
+
+    if (!/^254\d{9}$/.test(cleanPhone)) {
+      setMessage("❌ Invalid phone number. Example: 254712345678");
       setLoading(false);
       return;
     }
 
     const payload = {
       eventId,
-      ticketQuantity: quantity,
+      ticketQuantity: Number(quantity),
       phoneNumber: cleanPhone,
     };
 
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:4000/api/payments/stkpush", {
+      if (!token) {
+        setMessage("❌ Please login first.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("Sending request to:", `${API_BASE_URL}/api/payments/stkpush`);
+
+      const res = await fetch(`${API_BASE_URL}/api/payments/stkpush`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,21 +56,30 @@ function TicketPurchase({ eventId }) {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-      // Step 2: Handle response properly
-      if (res.ok && data.ResponseCode === "0") {
-        setMessage("✅ Payment initiated successfully. Check your phone.");
+      console.log("Response:", data);
+
+      if (res.status === 401) {
+        setMessage("❌ Unauthorized. Please login again.");
+      } else if (res.ok) {
+        setMessage(
+          data.CustomerMessage ||
+            data.message ||
+            "✅ STK Push initiated. Check your phone."
+        );
       } else {
-        const errorMsg =
-          data.errorMessage ||
-          data.message ||
-          "Payment failed. Check number or backend logs.";
-        setMessage("❌ " + errorMsg);
+        setMessage(
+          `❌ ${
+            data.errorMessage ||
+            data.message ||
+            "Payment request failed."
+          }`
+        );
       }
-    } catch (err) {
-      console.error("Payment error:", err);
-      setMessage("⚠️ Something went wrong. Check console or backend.");
+    } catch (error) {
+      console.error("Payment error:", error);
+      setMessage("❌ Failed to connect to payment server.");
     } finally {
       setLoading(false);
     }
